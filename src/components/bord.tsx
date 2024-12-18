@@ -51,6 +51,44 @@ export default function Game() {
     }
   }, [snake, dots])
 
+
+  useEffect(() => {
+    const ticker = new PIXI.Ticker()
+    ticker.add(() => {
+      if (gameOver) return
+
+      const newSnake = [...snake]
+      const head = { x: newSnake[0].x + direction.x, y: newSnake[0].y + direction.y }
+
+      if (
+        head.x < 0 || head.x >= 25 ||
+        head.y < 0 || head.y >= 25 ||
+        newSnake.some(segment => segment.x === head.x && segment.y === head.y)
+      ) {
+        setGameOver(true)
+        ticker.stop()
+        return
+      }
+
+      newSnake.unshift(head)
+
+      if (head.x === dots.x && head.y === dots.y) {
+        setScore(prev => prev + 1)
+        setDots({ x: Math.floor(Math.random() * 25), y: Math.floor(Math.random() * 25) })
+      } else {
+        newSnake.pop()
+      }
+
+      setSnake(newSnake)
+    })
+
+    ticker.start()
+
+    return () => {
+      ticker.stop()
+    }
+  }, [snake, direction, dots, gameOver])
+
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       switch (e.key) {
