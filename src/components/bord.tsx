@@ -14,7 +14,13 @@ export default function Game() {
   const [snake, setSnake] = useState([{ x: 5, y: 5 }])
   const [dots, setDots] = useState({ x: 10, y: 10 })
   const [direction, setDirection] = useState({ x: 1, y: 0 })
+  const [speed, setSpeed] = useState<'slow' | 'normal' | 'fast'>('normal')
 
+  const speedS = {
+    slow: 200,
+    normal: 100,
+    fast: 50,
+  }
   const pixiAppRef = useRef<Application | null>(null)
   const snakeGraphics = useRef<Graphics | null>(null)
   const dotsGraphics = useRef<Graphics | null>(null)
@@ -79,7 +85,7 @@ export default function Game() {
       setSnake(newSnake)
     }
 
-    const gameLoop = setInterval(moveSnake, 150)
+    const gameLoop = setInterval(moveSnake, speedS[speed])
 
     return () => {
       clearInterval(gameLoop)
@@ -139,6 +145,10 @@ export default function Game() {
     setGameS(true)
   }
 
+  const handleSpeed = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSpeed(e.target.value as 'slow' | 'normal' | 'fast')
+  }
+
   console.log("gameS", gameS)
   console.log("snake", snake)
   console.log("direction", direction)
@@ -154,8 +164,45 @@ export default function Game() {
             Start Game
           </button>
         </div>)}
-      <div className="bg-sky-800 p-3 m-3 rounded text-white text-center">
-        Score: {score}
+
+      <h4 className="mb-4 text-sky-500 py-4 text-xl">Your score: {score}</h4>
+      <div className="p-4 absolute left-0">
+        <div className="text-white mb-4 text-2xl">Speed :</div>
+        <div className="flex flex-col gap-2">
+          <label className="">
+            <input
+              type="radio"
+              name="speed"
+              value="slow"
+              checked={speed === 'slow'}
+              onChange={handleSpeed}
+              className="mr-2"
+            />
+            Slow
+          </label>
+          <label className="">
+            <input
+              type="radio"
+              name="speed"
+              value="normal"
+              checked={speed === 'normal'}
+              onChange={handleSpeed}
+              className="mr-2"
+            />
+            Normal
+          </label>
+          <label className="">
+            <input
+              type="radio"
+              name="speed"
+              value="fast"
+              checked={speed === 'fast'}
+              onChange={handleSpeed}
+              className="mr-2"
+            />
+            Fast
+          </label>
+        </div>
       </div>
       <div ref={appRef} className="border border-gray-300"></div>
       {gameO && (
