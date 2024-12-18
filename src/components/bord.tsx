@@ -1,8 +1,8 @@
 'use client'
 
 export default function Game() {
-  const X = 25
-  const Y = 25
+  const X_S = 25
+  const Y_S = 25
 
   return (
     <>
@@ -11,8 +11,8 @@ export default function Game() {
       </div >
       <div className="relative">
         <canvas
-          width={X * Y}
-          height={Y * X}
+          width={X_S * Y_S}
+          height={X_S * Y_S}
           className="border border-white"
         />
       </div>
