@@ -1,93 +1,92 @@
 'use client'
 
 import { useEffect, useRef, useState } from "react"
-import * as PIXI from "pixi.js"
+import { Application, Graphics } from 'pixi.js'
 
 export default function Game() {
-  const W: number = 500
-  const H: number = 500
-  const appRef = useRef<PIXI.Application | null>(null)
+  const S: number = 25
+  const W: number = S * S
+  const H: number = S * S
+  const appRef = useRef<HTMLDivElement | null>(null)
+  const [gameS, setGameS] = useState(false)
   const [score, setScore] = useState(0)
-  const [gameOver, setGameOver] = useState<boolean>(false)
+  const [gameO, setGameO] = useState(false)
   const [snake, setSnake] = useState([{ x: 5, y: 5 }])
   const [dots, setDots] = useState({ x: 10, y: 10 })
-  const [direction, setDirection] = useState<any>({ x: 1, y: 0 })
+  const [direction, setDirection] = useState({ x: 1, y: 0 })
+
+  const pixiAppRef = useRef<Application | null>(null)
+  const snakeGraphics = useRef<Graphics | null>(null)
+  const dotsGraphics = useRef<Graphics | null>(null)
 
   useEffect(() => {
-    const app = new PIXI.Application({
+    const app = new Application({
       width: W,
       height: H,
-      backgroundColor: 0x1099bb,
+      backgroundColor: 0x000000,
     })
-    appRef.current = app
-    document.getElementById("game")?.appendChild(app.view as any)
+    pixiAppRef.current = app
 
-    const snakeGraphics = new PIXI.Graphics()
-    app.stage.addChild(snakeGraphics)
-
-    const dotsGraphics = new PIXI.Graphics()
-    app.stage.addChild(dotsGraphics)
-
-
-    const render = () => {
-      snakeGraphics.clear()
-      dotsGraphics.clear()
-
-      snakeGraphics.beginFill(0x00ff00)
-      snake.forEach(segment => {
-        snakeGraphics.drawRect(segment.x * 25, segment.y * 25, 25, 25)
-      })
-      snakeGraphics.endFill()
-
-      dotsGraphics.beginFill(0xff0000)
-      dotsGraphics.drawRect(dots.x * 25, dots.y * 25, 25, 25)
-      dotsGraphics.endFill()
+    if (appRef.current) {
+      appRef.current.appendChild(app.view as any)
     }
-    app.ticker.add(render)
+
+    const snakeG = new Graphics()
+    snakeG.beginFill(0x00ff00)
+    app.stage.addChild(snakeG)
+    snakeGraphics.current = snakeG
+
+    const dotsG = new Graphics()
+    dotsG.beginFill(0xff0000)
+    app.stage.addChild(dotsG)
+    dotsGraphics.current = dotsG
 
     return () => {
-      app.ticker.remove(render)
-      app.destroy(true, true)
+      app.destroy(true, { children: true })
     }
-  }, [snake, dots])
-
+  }, [])
 
   useEffect(() => {
-    const ticker = new PIXI.Ticker()
-    ticker.add(() => {
-      if (gameOver) return
+    if (!gameS || gameO) return
 
+    const moveSnake = () => {
       const newSnake = [...snake]
-      const head = { x: newSnake[0].x + direction.x, y: newSnake[0].y + direction.y }
+      const head = { ...newSnake[0] }
+      head.x += direction.x
+      head.y += direction.y
 
       if (
-        head.x < 0 || head.x >= 25 ||
-        head.y < 0 || head.y >= 25 ||
+        head.x < 0 || head.x >= S ||
+        head.y < 0 || head.y >= S ||
         newSnake.some(segment => segment.x === head.x && segment.y === head.y)
       ) {
-        setGameOver(true)
-        ticker.stop()
+        setGameO(true)
         return
       }
 
       newSnake.unshift(head)
 
       if (head.x === dots.x && head.y === dots.y) {
-        setScore(prev => prev + 1)
-        setDots({ x: Math.floor(Math.random() * 25), y: Math.floor(Math.random() * 25) })
+        setScore(prevScore => prevScore + 1)
+        setDots({
+          x: Math.floor(Math.random() * S),
+          y: Math.floor(Math.random() * S),
+        })
       } else {
         newSnake.pop()
       }
 
       setSnake(newSnake)
-    })
+    }
 
-    ticker.start()
+    const gameLoop = setInterval(moveSnake, 150)
 
     return () => {
-      ticker.stop()
+      clearInterval(gameLoop)
     }
-  }, [snake, direction, dots, gameOver])
+  }, [snake, direction, dots, gameO, gameS])
+
+
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -108,42 +107,71 @@ export default function Game() {
     }
 
     window.addEventListener('keydown', handleKeyPress)
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyPress)
-    }
+    return () => window.removeEventListener('keydown', handleKeyPress)
   }, [direction])
 
+  useEffect(() => {
+    if (!snakeGraphics.current || !dotsGraphics.current) return
 
+    const snakeG = snakeGraphics.current
+    const dotsG = dotsGraphics.current
 
+    snakeG.clear()
+    dotsG.clear()
+
+    snakeG.beginFill(0x4CAF50)
+    snake.forEach(segment => {
+      snakeG.drawRoundedRect(segment.x * S, segment.y * S, S, S, 10)
+    })
+    snakeG.endFill()
+
+    dotsG.beginFill(0xFF9800)
+    dotsG.drawCircle(dots.x * S + S / 2, dots.y * S + S / 2, S / 2)
+    dotsG.endFill()
+  }, [snake, dots])
+
+  const restartGame = () => {
+    setSnake([{ x: 5, y: 5 }])
+    setDirection({ x: 1, y: 0 })
+    setDots({ x: 10, y: 10 })
+    setGameO(false)
+    setScore(0)
+    setGameS(true)
+  }
+
+  console.log("gameS", gameS)
+  console.log("snake", snake)
   console.log("direction", direction)
-
   return (
-    <>
+    <div className="flex flex-col items-center justify-center">
+      <h1 className="text-4xl font-bold p-8">Snake Game</h1>
+      {!gameS && (
+        <div className="text-center">
+          <button
+            className="bg-sky-800 text-white font-bold p-3 rounded"
+            onClick={() => setGameS(true)}
+          >
+            Start Game
+          </button>
+        </div>)}
       <div className="bg-sky-800 p-3 m-3 rounded text-white text-center">
         Score: {score}
-      </div >
-      <div className="relative">
-        {/* <canvas */}
-        {/*   width={X_S * Y_S} */}
-        {/*   height={X_S * Y_S} */}
-        {/*   className="border border-white" */}
-        {/* /> */}
-        <div id="game" className="relative border border-white" />
       </div>
-      {gameOver &&
-        <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-          <div className="bg-white p-8 rounded text-center">
+      <div ref={appRef} className="border border-gray-300"></div>
+      {gameO && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-md">
+          <div className="bg-white px-20 py-10 rounded text-center">
             <h2 className="text-2xl font-bold py-4 text-sky-800">Game Over</h2>
+            <h4 className="mb-4 text-sky-500 py-4 text-xl">Your score: {score}</h4>
             <button
               className="bg-sky-800 text-white font-bold p-3 rounded"
+              onClick={restartGame}
             >
               Play Again
             </button>
           </div>
         </div>
-      }
-    </>
+      )}
+    </div>
   )
 }
-
