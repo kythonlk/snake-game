@@ -1,15 +1,31 @@
 'use client'
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import * as PIXI from "pixi.js"
 
 export default function Game() {
-  const X_S: number = 25
-  const Y_S: number = 25
+  const W: number = 500
+  const H: number = 500
+  const appRef = useRef<PIXI.Application | null>(null)
   const [score, setScore] = useState(0)
   const [gameOver, setGameOver] = useState<boolean>(false)
   const [snake, setSnake] = useState()
   const [dots, setDots] = useState()
   const [direction, setDirection] = useState<any>({ x: 1, y: 0 })
+
+  useEffect(() => {
+    const app = new PIXI.Application({
+      width: W,
+      height: H,
+      backgroundColor: 0x1099bb,
+    })
+    appRef.current = app
+    document.getElementById("game")?.appendChild(app.view)
+
+    return () => {
+      app.destroy(true, true)
+    }
+  }, [])
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -36,6 +52,8 @@ export default function Game() {
     }
   }, [direction])
 
+
+
   console.log("direction", direction)
 
   return (
@@ -44,11 +62,12 @@ export default function Game() {
         Score: {score}
       </div >
       <div className="relative">
-        <canvas
-          width={X_S * Y_S}
-          height={X_S * Y_S}
-          className="border border-white"
-        />
+        {/* <canvas */}
+        {/*   width={X_S * Y_S} */}
+        {/*   height={X_S * Y_S} */}
+        {/*   className="border border-white" */}
+        {/* /> */}
+        <div id="game" className="relative border border-white" />
       </div>
       {gameOver &&
         <div className="absolute inset-0 flex items-center justify-center bg-black/50">
