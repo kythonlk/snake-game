@@ -1,13 +1,44 @@
 'use client'
 
+import { useEffect, useState } from "react"
+
 export default function Game() {
-  const X_S = 25
-  const Y_S = 25
+  const X_S: number = 25
+  const Y_S: number = 25
+  const [score, setScore] = useState(0)
+  const [direction, setDirection] = useState<any>({ x: 1, y: 0 })
+
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case 'ArrowUp':
+          if (direction.y === 0) setDirection({ x: 0, y: -1 })
+          break
+        case 'ArrowDown':
+          if (direction.y === 0) setDirection({ x: 0, y: 1 })
+          break
+        case 'ArrowLeft':
+          if (direction.x === 0) setDirection({ x: -1, y: 0 })
+          break
+        case 'ArrowRight':
+          if (direction.x === 0) setDirection({ x: 1, y: 0 })
+          break
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyPress)
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress)
+    }
+  }, [direction])
+
+  console.log("direction", direction)
 
   return (
     <>
       <div className="bg-sky-800 p-3 m-3 rounded text-white text-center">
-        Score:
+        Score: {score}
       </div >
       <div className="relative">
         <canvas

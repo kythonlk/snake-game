@@ -1,40 +1,42 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
-export default function FPS() {
-  const [fps, setFps] = useState<number>(0);
+const FPS = () => {
+  const [fps, setFps] = useState(0);
+  const [memU, setMemU] = useState(0);
 
   useEffect(() => {
-    let lTFrame: number = 0;
-    let Cframe: number = 0;
-    let time: number = 0;
+    let lastFrameTime = performance.now();
+    let frameCount = 0;
 
-    const updateStats = () => {
-      const now: number = performance.now();
-      const delta = now - lTFrame;
-      Cframe++;
-      time += delta;
+    const calculateStats = () => {
+      const now = performance.now();
+      frameCount++;
 
-      if (time >= 1000) {
-        setFps(Cframe);
-        Cframe = 0;
-        time = 0;
+      if (now - lastFrameTime >= 1000) {
+        setFps(frameCount);
+        frameCount = 0;
+        lastFrameTime = now;
+
+        if (typeof window !== "undefined" && window.performance?.memory) {
+          const usedMemoryKB = Math.round(window.performance?.memory.usedJSHeapSize / 1024);
+          setMemU(usedMemoryKB);
+        }
       }
 
-      lTFrame = now;
-      requestAnimationFrame(updateStats);
+      requestAnimationFrame(calculateStats);
     };
 
-    updateStats();
-
+    calculateStats();
   }, []);
-  const memU = Math.round(window.performance?.memory?.usedJSHeapSize / 1024);
 
   return (
     <div className="absolute top-0 left-0 p-4 bg-white/50 text-black">
       <h1>FPS: {fps}</h1>
-      <h5>MEM: {memU} KB</h5>
+      <h5>MEM: {memU > 0 ? `${memU} KB` : "N/A"}</h5>
     </div>
   );
 };
+
+export default FPS;
