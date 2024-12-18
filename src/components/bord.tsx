@@ -9,8 +9,8 @@ export default function Game() {
   const appRef = useRef<PIXI.Application | null>(null)
   const [score, setScore] = useState(0)
   const [gameOver, setGameOver] = useState<boolean>(false)
-  const [snake, setSnake] = useState()
-  const [dots, setDots] = useState()
+  const [snake, setSnake] = useState([{ x: 5, y: 5 }])
+  const [dots, setDots] = useState({ x: 10, y: 10 })
   const [direction, setDirection] = useState<any>({ x: 1, y: 0 })
 
   useEffect(() => {
@@ -20,12 +20,36 @@ export default function Game() {
       backgroundColor: 0x1099bb,
     })
     appRef.current = app
-    document.getElementById("game")?.appendChild(app.view)
+    document.getElementById("game")?.appendChild(app.view as any)
+
+    const snakeGraphics = new PIXI.Graphics()
+    app.stage.addChild(snakeGraphics)
+
+    const dotsGraphics = new PIXI.Graphics()
+    app.stage.addChild(dotsGraphics)
+
+
+    const render = () => {
+      snakeGraphics.clear()
+      dotsGraphics.clear()
+
+      snakeGraphics.beginFill(0x00ff00)
+      snake.forEach(segment => {
+        snakeGraphics.drawRect(segment.x * 25, segment.y * 25, 25, 25)
+      })
+      snakeGraphics.endFill()
+
+      dotsGraphics.beginFill(0xff0000)
+      dotsGraphics.drawRect(dots.x * 25, dots.y * 25, 25, 25)
+      dotsGraphics.endFill()
+    }
+    app.ticker.add(render)
 
     return () => {
+      app.ticker.remove(render)
       app.destroy(true, true)
     }
-  }, [])
+  }, [snake, dots])
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
