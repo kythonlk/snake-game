@@ -1,3 +1,0 @@
-compatibility_date = "2024-12-19"
-compatibility_flags = ["nodejs_v"]
-nodejs_version = "20"
