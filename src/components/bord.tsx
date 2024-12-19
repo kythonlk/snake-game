@@ -68,7 +68,7 @@ export default function Game() {
     return () => {
       app.destroy(true, { children: true })
     }
-  }, [])
+  }, [H, W])
 
   useEffect(() => {
     if (!gameS || gameO) return
@@ -108,7 +108,7 @@ export default function Game() {
     return () => {
       clearInterval(gameLoop)
     }
-  }, [snake, direction, dots, gameO, gameS])
+  }, [snake, direction, dots, gameO, gameS, speed])
 
 
 
@@ -186,7 +186,7 @@ export default function Game() {
 
       <h4 className="mb-4 text-sky-500 py-4 text-xl">Your score: {score}</h4>
       <div className="p-4 absolute left-0">
-        <div className="text-white mb-4 text-2xl">Speed :</div>
+        <div className="text-white mb-4  mt-20 text-2xl">Speed :</div>
         <div className="flex flex-col gap-2">
           <label className="p-2">
             <input
