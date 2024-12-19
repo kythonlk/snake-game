@@ -15,4 +15,4 @@ A Snake Game built with React, nextjs and pixi.js (Good old nokia snake game)
 
 [https://snake.kythonlk.com/](https://snake.kythonlk.com/)
 
-![Screenshot](https://github.com/kythonlk/snake-game/blob/main/ss.png)
+![Screenshot](https://github.com/kythonlk/snake-game/blob/main/src/assets/ss.png)
